@@ -1,0 +1,1 @@
+V10.5 Live Interaction Lab: automatic cycling of five native transforms, baseline-vs-live comparison charts, per-cell RGB XOR heatmap, optional experiment timeline captures. Automation runs in browser and stops when tab is closed. Engine continues after stopping automation.

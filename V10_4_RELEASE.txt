@@ -1,0 +1,2 @@
+V10.4 Animated Spatial Evolution
+Interpolated RGB states between captured frames, inferred bonding/separation and transport overlays, adjustable playback speed. Historical effects are visual estimates, not measured engine events.

@@ -1,0 +1,1 @@
+V10.1: mathematical experiment analysis, distribution entropy, RGB channel means, cell-difference chart, operation comparison, optional history inspection. Compares saved baseline snapshots; recorded actions are not assumed to have changed them. Native engine and 3D views retained.

@@ -1,0 +1,1 @@
+V10.3: Historical timeline frames can be previewed as spatial RGB projections on Canvas and WebGL model surfaces. Overlays do not modify the native engine or WebGL state. Return to live view clears overlays. Historical frames are sampled for rendering, not a full native WebGL state rewind.

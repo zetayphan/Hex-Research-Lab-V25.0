@@ -1,0 +1,1 @@
+V10.2: Live experiment timeline. Capture native snapshots every 2 seconds (opt-in), visualize state mean across frames, scrub, preview, and restore while paused. Maximum 250 frames per experiment. Timeline snapshots are separate from baseline experiments. Browser recording stops when the page closes.

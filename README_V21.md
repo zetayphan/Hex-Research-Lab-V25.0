@@ -1,0 +1,3 @@
+# Hex Unified Research Lab V21 — Native Research Automation
+
+Open `/automation-v21`. Pause the native engine, choose 1–16 distinct cells and 1–20 steps, and run. Each step captures selected cells across 17 stages in a single native step, saves V20.2-compatible playback records, evaluates V20.1-style conservation observations, restores the recorded native bytes, and generates V20.3 Markdown reports. Results are stored in `research_data/v21/reports/` and playback files in `research_data/v202/playback/`. This is a bounded foreground server request, not a background job. It does not prove full-state reversibility or global conservation.
