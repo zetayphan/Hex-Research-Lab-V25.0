@@ -1,0 +1,43 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>V22 Persistent Research Queue</title><style>body{background:#081421;color:#e5f7ff;font:16px system-ui;margin:0}main,header{max-width:1000px;margin:auto;padding:16px}nav{display:flex;flex-wrap:wrap;gap:8px}a,button{background:#17384d;color:#c4f8ff;border:1px solid #43849c;border-radius:8px;padding:10px;text-decoration:none;cursor:pointer}input{background:#071b2b;color:white;padding:10px;border:1px solid #43849c;border-radius:6px;max-width:90%}section{background:#11283b;border:1px solid #34556a;padding:16px;border-radius:12px;margin:12px 0}.job{padding:12px;border-bottom:1px solid #39576b;overflow-wrap:anywhere}.meta{color:#b3d5e3}button:disabled{opacity:.5}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style><header><nav><a href="/home">⌂ Home</a><a href="javascript:history.back()">← Back</a><a href="/terminal">Terminal</a><a href="/automation-v21">V21 Automation</a><a href="/reports-v203">Reports</a></nav></header><main><h1>⬡ V22 · Persistent Research Queue</h1><p>Queue bounded native experiments; jobs and completed reports persist across server restarts. The server must remain running to execute jobs. Pause the native engine before submitting.</p><section><label>Cells <input id="cells" value="0,1,2"></label> <label>Steps per run <input id="steps" type="number" min="1" max="20" value="3"></label> <label>Runs <input id="repetitions" type="number" min="1" max="100" value="3"></label><p><button onclick="submitJob()">Queue experiment</button> <button onclick="pauseEngine()">Pause engine</button></p><p id="message" role="status"></p></section><section><h2>Saved jobs <button onclick="refreshJobs()">Refresh</button></h2><div id="jobs">Loading…</div></section><p class="meta">Cancellation takes effect between runs, not during an individual V21 experiment. Interrupted runs are marked for manual retry to avoid unintentional duplicate execution. Full auxiliary-state restoration remains unverified.</p></main><script>
+const statusEl=document.getElementById('message');
+const jobsEl=document.getElementById('jobs');
+async function api(path,body){
+ const opts=body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)};
+ let response;
+ try{response=await fetch(path,opts)}catch(err){throw new Error('Cannot reach research server: '+err.message)}
+ const raw=await response.text();let data;
+ try{data=JSON.parse(raw)}catch(_){throw new Error('HTTP '+response.status+': '+raw.slice(0,200))}
+ if(!response.ok)throw new Error(data.error||('HTTP '+response.status));return data;
+}
+async function pauseEngine(){try{await api('/api/terminal/engine',{command:'pause'});statusEl.textContent='Engine paused'}catch(err){statusEl.textContent=err.message}}
+async function submitJob(){
+ try{
+  const cellsText=document.getElementById('cells').value;
+  const cells=cellsText.split(',').map(x=>Number(x.trim()));
+  const steps=Number(document.getElementById('steps').value);
+  const repetitions=Number(document.getElementById('repetitions').value);
+  if(!cellsText.trim()||cells.some(x=>!Number.isInteger(x))||!Number.isInteger(steps)||!Number.isInteger(repetitions))throw Error('Enter valid integer values');
+  const job=await api('/api/v22/submit',{cells,steps,repetitions});
+  statusEl.textContent='Queued '+job.id;await refreshJobs();
+ }catch(err){statusEl.textContent=err.message}
+}
+async function jobAction(id,kind){try{await api('/api/v22/action',{id,action:kind});await refreshJobs()}catch(err){statusEl.textContent=err.message}}
+async function refreshJobs(){
+ try{
+  const data=await api('/api/v22/jobs');jobsEl.replaceChildren();
+  if(!Array.isArray(data.jobs)||!data.jobs.length){jobsEl.textContent='No jobs yet';return}
+  for(const j of data.jobs){
+   const el=document.createElement('div');el.className='job';
+   const title=document.createElement('strong');title.textContent=String(j.status).toUpperCase()+' · '+j.completed+'/'+j.repetitions+' runs';el.append(title);
+   const info=document.createElement('p');info.className='meta';info.textContent='Cells: '+j.cells.join(',')+' · Steps: '+j.steps+' · '+new Date(j.created*1000).toLocaleString();el.append(info);
+   if(j.error){const err=document.createElement('p');err.textContent='Error: '+j.error;el.append(err)}
+   for(const result of j.results||[]){const p=document.createElement('p');p.textContent='Experiment: '+result.experiment_id+' · '+(result.reports||[]).length+' reports';el.append(p)}
+   const kinds=['queued','running','interrupted'].includes(j.status)?['cancel']:['failed','cancelled','interrupted'].includes(j.status)?['retry']:[];
+   for(const kind of kinds){const btn=document.createElement('button');btn.textContent=kind;btn.onclick=()=>jobAction(j.id,kind);el.append(btn)}
+   jobsEl.append(el)
+  }
+ }catch(err){statusEl.textContent='Refresh failed: '+err.message;jobsEl.textContent='Unable to load saved jobs'}
+}
+window.submitJob=submitJob;window.pauseEngine=pauseEngine;window.refreshJobs=refreshJobs;
+refreshJobs();setInterval(refreshJobs,3000);
+</script></html>

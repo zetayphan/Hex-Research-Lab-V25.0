@@ -1,0 +1,17 @@
+HEX TERMINAL PRO X V3
+Run: ./hex-terminal.sh
+Then: program run experiments/v3_demo.hex
+Or: program eval 0xA3 + 0x7F
+
+Language (one instruction per line):
+ LET name = expression
+ PRINT expression
+ ASSERT expression == expression (also !=, <, >, <=, >=)
+ REPEAT expression (0..100)
+   ...
+ END
+ NATIVE status|hex|rgb|step|engines|diagnostics|state [argument]
+
+Expressions support decimal/hex integers, named variables, + - * // % & | ^ << >> and unary + - ~.
+Limits: 256-bit integers, 500 lines, 2000 executed instructions. No Python eval, filesystem commands, network calls, or arbitrary shell execution.
+Native instructions call the existing HTTP-backed C engine; language arithmetic is performed in Python, not compiled into the C engine.
